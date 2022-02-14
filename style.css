@@ -1,3 +1,9 @@
 table {
-  border: 1px solid black;
+  border: 2px solid black;
+}
+.form-limit {
+  width: 80px;
+}
+.container h3 {
+  margin-top: 2rem;
 }
