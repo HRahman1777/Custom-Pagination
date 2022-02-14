@@ -1,91 +1,5 @@
 <?php
-include "db_conn.php";
-
-$sql_query = "SELECT * FROM users";
-$result = mysqli_query($connection, $sql_query);
-
-$limit_per_page = getLimit();
-$select_options_value = [10, 30, 50, 80, 100];
-
-$total_number_of_data = mysqli_num_rows($result);
-$total_page_need = ceil($total_number_of_data / $limit_per_page);
-$page = getPageNum($total_page_need);
-
-$start_limit = ($page - 1) * $limit_per_page;
-$final_data = dataPerPage($connection, $start_limit, $limit_per_page);
-
-
-
-
-function getPageNum($tpn)
-{
-    if (isset($_GET['pageNo'])) {
-        $p = $_GET['pageNo'];
-
-        if ($p < 1) {
-            $p = 1;
-        } elseif ($p > $tpn) {
-            $p = $tpn;
-        }
-    } else {
-        $p = 1;
-    }
-
-    return $p;
-}
-
-function getLimit()
-{
-    if (isset($_POST['set_limit'])) {
-        $page_limit = $_POST['set_limit'];
-    } else {
-
-        if (isset($_GET['limit'])) {
-            $page_limit = $_GET['limit'];
-        } else {
-            $page_limit = 30;
-        }
-    }
-
-    return $page_limit;
-}
-
-function setDistabled($p, $tpn)
-{
-    if ($p > 1) {
-        $active_pre = '';
-    } else {
-        $active_pre = 'disabled';
-    }
-
-    if ($p < $tpn) {
-        $active_next = '';
-    } else {
-        $active_next = 'disabled';
-    }
-
-    $disable = array($active_pre, $active_next);
-
-    return $disable;
-}
-
-function dataPerPage($conn, $sl, $lpp)
-{
-    $sql_query = "SELECT * FROM users LIMIT $sl, $lpp";
-    return mysqli_query($conn, $sql_query);
-}
-
-function dataDetailsPerPage($td, $st, $lpp)
-{
-    $from = $st + 1;
-    $to = $st + $lpp;
-
-    if ($to > $td) {
-        $to = $td;
-    }
-    return array($from, $to);
-}
-
+include "allFunction.php";
 
 ?>
 
@@ -170,17 +84,34 @@ function dataDetailsPerPage($td, $st, $lpp)
                 </li>
 
                 <?php
-                for ($loop_page = 1; $loop_page <= $total_page_need; $loop_page++) {
+                if ($total_page_need <= 8) {
+                    selectLoop(1, $total_page_need, $page, $limit_per_page);
+                } else {
+                    if ($page < 6) {
 
-                    if ($loop_page == $page) {
-                        $active_page_number = 'active';
+                        selectLoop(1, 6, $page, $limit_per_page);
+
+                        echo "<li class='page-item page-link'> ... </li>";
+                        echo "<li class='page-item'><a class='page-link ' href='index.php?pageNo=$total_page_need&limit=$limit_per_page '> $total_page_need </a></li>";
+                    } elseif ($page > 4 && $page < $total_page_need - 2) {
+                        echo "<li class='page-item'><a class='page-link ' href='index.php?pageNo=1&limit=$limit_per_page'>1</a></li>";
+                        echo "<li class='page-item'><a class='page-link ' href='index.php?pageNo=2&limit=$limit_per_page'>2</a></li>";
+                        echo "<li class='page-item page-link'> ... </li>";
+
+                        selectLoop($page - 2, $page + 1, $page, $limit_per_page);
+
+                        echo "<li class='page-item page-link'> ... </li>";
+                        echo "<li class='page-item'><a class='page-link ' href='index.php?pageNo=$total_page_need&limit=$limit_per_page'> $total_page_need </a></li>";
                     } else {
-                        $active_page_number = '';
-                    }
-                ?>
-                    <li class="page-item <?php echo $active_page_number; ?>"><a class="page-link " href="index.php?pageNo=<?php echo $loop_page . "&limit=$limit_per_page"; ?>"> <?php echo $loop_page; ?> </a></li>
 
-                <?php }; ?>
+                        echo "<li class='page-item'><a class='page-link ' href='index.php?pageNo=1&limit=$limit_per_page'>1</a></li>";
+                        echo "<li class='page-item'><a class='page-link ' href='index.php?pageNo=2&limit=$limit_per_page'>2</a></li>";
+                        echo "<li class='page-item page-link'> ... </li>";
+
+                        selectLoop($page - 1, $total_page_need, $page, $limit_per_page);
+                    }
+                }
+                ?>
 
                 <li class="page-item <?php echo $disable[1]; ?>">
                     <a class="page-link" href="index.php?pageNo=<?php echo $page + 1 . "&limit=$limit_per_page"; ?>">Next</a>
